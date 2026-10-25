@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "python .cursor/hooks/sdlc_context.py",
+        "timeout": 10
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "python .cursor/hooks/guard_shell.py",
+        "timeout": 10
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "python .cursor/hooks/guard_secrets.py",
+        "timeout": 10
+      }
+    ]
+  }
+}
