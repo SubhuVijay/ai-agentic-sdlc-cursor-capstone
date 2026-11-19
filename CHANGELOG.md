@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retargeted the workspace to the Lane Street Library hold shelf (HOLD-21), with the baseline hold-shelf app in `src/holdshelf`.
 - Each sub-agent writes its markdown under `.cursor/artifacts/<sub-agent>/` instead of the repository root.
 
+### Fixed
+
+- Secret-file checks split both `\` and `/`, so a Windows path such as `C:\repo\.env` is blocked on Linux as well as Windows.
+
 ## [0.1.0] - 2026-10-25
 
 ### Added
