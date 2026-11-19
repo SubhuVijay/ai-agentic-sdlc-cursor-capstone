@@ -13,6 +13,9 @@
     th, td { text-align: left; padding: 0.55rem 0.4rem; border-bottom: 1px solid #e7e5e4; }
     th { font-size: 0.8rem; letter-spacing: 0.03em; text-transform: uppercase; color: #78716c; }
     button { font: inherit; padding: 0.3rem 0.7rem; }
+    section { margin-top: 2.2rem; }
+    h2 { font-size: 1.25rem; }
+    .controls { display: flex; gap: 0.6rem; align-items: center; margin: 0.6rem 0 1rem; }
     .error { background: #fef2f2; color: #991b1b; padding: 0.7rem 0.8rem; }
     .empty { color: #57534e; }
   </style>
@@ -35,9 +38,37 @@
     <tbody id="holds"></tbody>
   </table>
 
+  <section>
+    <h2>Long-waiting holds</h2>
+    <p class="controls">
+      <label for="window-days">Pickup window in days</label>
+      <input id="window-days" type="number" min="1" step="1" value="7">
+      <button id="show-long-waiting" type="button">Show long-waiting holds</button>
+    </p>
+    <div id="long-waiting-message" role="status"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Hold</th>
+          <th>Title</th>
+          <th>Patron</th>
+          <th>Ready since</th>
+          <th>Days waiting</th>
+          <th>Phone</th>
+        </tr>
+      </thead>
+      <tbody id="long-waiting"></tbody>
+    </table>
+  </section>
+
   <script>
     const message = document.getElementById("message");
     const body = document.getElementById("holds");
+    const longMessage = document.getElementById("long-waiting-message");
+    const longBody = document.getElementById("long-waiting");
+    const windowInput = document.getElementById("window-days");
+    const showLongWaiting = document.getElementById("show-long-waiting");
+    let rememberedWindowDays = null;
 
     function showError(text) {
       message.className = "error";
@@ -104,7 +135,75 @@
         return;
       }
       await loadHolds();
+      if (rememberedWindowDays !== null) {
+        await loadLongWaiting(rememberedWindowDays);
+      }
     }
+
+    function showLongWaitingProblem(text) {
+      longMessage.className = "error";
+      longMessage.textContent = text;
+      longBody.replaceChildren();
+    }
+
+    function renderLongWaiting(holds) {
+      longMessage.className = "";
+      longMessage.textContent = "";
+      longBody.replaceChildren();
+      if (holds.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 6;
+        cell.className = "empty";
+        cell.textContent = "No ready hold is past the pickup window.";
+        row.append(cell);
+        longBody.append(row);
+        return;
+      }
+      for (const hold of holds) {
+        const row = document.createElement("tr");
+        const phone = hold.phone == null ? "Not Found" : hold.phone;
+        for (const value of [hold.id, hold.title, hold.patron, hold.readySince, hold.daysWaiting, phone]) {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.append(cell);
+        }
+        longBody.append(row);
+      }
+    }
+
+    async function loadLongWaiting(windowValue) {
+      showLongWaiting.disabled = true;
+      try {
+        let response;
+        try {
+          response = await fetch("/api/holds/overdue?windowDays=" + encodeURIComponent(windowValue));
+        } catch (error) {
+          showLongWaitingProblem("API unreachable");
+          return;
+        }
+        let payload;
+        try {
+          payload = await response.json();
+        } catch (error) {
+          showLongWaitingProblem("Could not load long-waiting holds.");
+          return;
+        }
+        if (response.status === 200 && payload && Array.isArray(payload.holds)) {
+          rememberedWindowDays = payload.windowDays;
+          renderLongWaiting(payload.holds);
+          return;
+        }
+        const errorText = payload && typeof payload.error === "string" ? payload.error : "";
+        showLongWaitingProblem(errorText || "Could not load long-waiting holds.");
+      } finally {
+        showLongWaiting.disabled = false;
+      }
+    }
+
+    showLongWaiting.addEventListener("click", () => {
+      loadLongWaiting(windowInput.value);
+    });
 
     loadHolds().catch(() => showError("API unreachable"));
   </script>

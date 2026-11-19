@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 
 
 @dataclass
@@ -10,7 +11,7 @@ class Hold:
     id: str
     title: str
     patron: str
-    ready_since: str
+    ready_since: str | None
     status: str
     phone: str | None = None
 
@@ -32,6 +33,25 @@ class Catalog:
 
     def list_holds(self) -> list[dict]:
         return [self.to_dict(hold) for hold in self._holds.values()]
+
+    def list_overdue(self, window_days: int, today: date) -> list[dict]:
+        overdue: list[dict] = []
+        for hold in self._holds.values():
+            if hold.status != "ready":
+                continue
+            if hold.ready_since is None or hold.ready_since == "":
+                continue
+            try:
+                ready = date.fromisoformat(hold.ready_since)
+            except (ValueError, TypeError):
+                continue
+            days_waiting = (today - ready).days
+            if days_waiting > window_days:
+                row = self.to_dict(hold)
+                row["daysWaiting"] = days_waiting
+                overdue.append(row)
+        overdue.sort(key=lambda row: (-row["daysWaiting"], row["id"]))
+        return overdue
 
     def mark_picked_up(self, hold_id: str) -> tuple[str, dict | None]:
         hold = self._holds.get(hold_id)

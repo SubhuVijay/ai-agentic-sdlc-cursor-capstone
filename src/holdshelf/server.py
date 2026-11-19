@@ -3,20 +3,52 @@
 from __future__ import annotations
 
 import json
+import re
+from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from typing import Callable
+from urllib.parse import parse_qs, unquote, urlparse
 
 from holdshelf.catalog import Catalog
 
 STATIC = Path(__file__).resolve().parent / "static" / "index.html"
 HOST = "127.0.0.1"
 PORT = 8765
+BAD_WINDOW_MESSAGE = "windowDays must be a whole number of days from 1 to 3650."
+
+
+class BadWindowError(ValueError):
+    def __init__(self) -> None:
+        super().__init__(BAD_WINDOW_MESSAGE)
+
+
+def parse_window_days(raw: list[str] | None) -> int:
+    if raw is None or len(raw) == 0:
+        return 7
+    if len(raw) != 1:
+        raise BadWindowError()
+    value = raw[0]
+    if re.fullmatch(r"[0-9]+", value) is None:
+        raise BadWindowError()
+    try:
+        days = int(value)
+    except ValueError:
+        raise BadWindowError() from None
+    if days < 1 or days > 3650:
+        raise BadWindowError()
+    return days
 
 
 class ShelfApp:
-    def __init__(self, catalog: Catalog | None = None) -> None:
+    def __init__(
+        self,
+        catalog: Catalog | None = None,
+        *,
+        today: Callable[[], date] | None = None,
+    ) -> None:
         self.catalog = catalog if catalog is not None else Catalog()
+        self.today = today if today is not None else date.today
 
     def handle(self, method: str, target: str) -> tuple[int, object]:
         path = unquote(urlparse(target).path)
@@ -29,6 +61,16 @@ class ShelfApp:
             return self._pickup(hold_id)
         if method == "GET" and path == "/":
             return 200, STATIC.read_text(encoding="utf-8")
+        if method == "GET" and path == "/api/holds/overdue":
+            query = parse_qs(urlparse(target).query, keep_blank_values=True)
+            try:
+                window = parse_window_days(query.get("windowDays"))
+            except BadWindowError:
+                return 400, {"error": BAD_WINDOW_MESSAGE}
+            return 200, {
+                "windowDays": window,
+                "holds": self.catalog.list_overdue(window, self.today()),
+            }
         return 404, {"error": "That page or hold was not found."}
 
     def _pickup(self, hold_id: str) -> tuple[int, dict]:
