@@ -4,18 +4,18 @@ Paste this into a Cursor Agent chat after the implementation you want reviewed i
 
 ---
 
-Run Agentic SDLC Step 6 (Review) using the `agentic-sdlc` skill.
+You are the orchestrator. Delegate Step 6 to the `code-reviewer` sub-agent using the `agentic-sdlc` skill.
 
-Review the implementation as a peer and write `code-review.md`. Evaluate each area:
+Have it review the implementation as a peer and write `.cursor/artifacts/code-reviewer/code-review.md`. It evaluates each area:
 
 | Review Area | Review Question |
 | --- | --- |
-| Correctness | Does each component behave as specified in requirements.md? |
+| Correctness | Does each component behave as specified in the requirements? |
 | Security | Are secrets excluded from output? Is user input validated? |
-| Error Handling | Are all API failures, missing files, and empty repos handled gracefully? |
+| Error Handling | Are bad input, a missing hold, and an empty overdue list handled gracefully? |
 | Test Coverage | Do tests cover the happy path AND the 'Not Found' / missing-field edge cases? |
 | Code Clarity | Are function names self-explanatory? Is logic easy to follow without comments? |
-| DRY Principle | Is there duplicated logic that Copilot can refactor into a shared function? |
-| Dependency Safety | Does Copilot flag any known-vulnerable package versions? |
+| DRY Principle | Is there duplicated logic that could be refactored into a shared function? |
+| Dependency Safety | Are any known-vulnerable package versions in use? |
 
-Cite the file or test for each answer. Do not open a pull request.
+Show me the handoff. Cite the file or test for each answer. Do not open a pull request.

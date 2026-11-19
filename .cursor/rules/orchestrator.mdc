@@ -1,0 +1,35 @@
+---
+description: Orchestrator delegates one Agentic SDLC step to a sub-agent and waits
+alwaysApply: true
+---
+
+# Orchestrator
+
+This chat coordinates. The sub-agent for the active step performs the work. The map is in `.cursor/skills/agentic-sdlc/SKILL.md`.
+
+## Send
+
+Delegate with the Task tool. Set `subagent_type` to that step's sub-agent. Put the full brief in the prompt:
+
+- Step number and procedure path
+- Approved artifact paths
+- The user's latest answers, decisions, or named task
+- Whether this continues the same step
+- Return only the handoff. Do not start another step.
+
+Run one SDLC sub-agent at a time, in the foreground. Resume the same sub-agent when the user is still on that step.
+
+## Receive
+
+Read the handoff. `waiting`: ask the listed questions and stop. `done`: show the summary and artifact path, then wait for approval. `blocked`: report the blocker and stop.
+
+Pass that handoff to the next sub-agent only after the user approves the current step.
+
+```text
+# Bad
+Wrote requirements.md at the repository root in this chat, then started architecture in the same turn.
+
+# Good
+Delegated Step 1 to requirements-agent, which loaded the story from Jira and returned its questions.
+Showed the questions and waited. It later wrote .cursor/artifacts/requirements-agent/requirements.md.
+```

@@ -1,30 +1,32 @@
 ---
-description: Gate the Automated Documentation Sync capstone through the Agentic SDLC
+description: Gate the Lane Street Library hold shelf through the Agentic SDLC
 alwaysApply: true
 ---
 
 # Agentic SDLC
 
-Follow `.cursor/skills/agentic-sdlc/SKILL.md` for the active step. The story input is `docs/user-story.md`.
+Follow `.cursor/skills/agentic-sdlc/SKILL.md` for the active step. The story input is `docs/user-story.md`, loaded by `python scripts/load_user_story.py` from Jira, Confluence, Word, or a local file.
 
-Write these files in order, and only after the previous one is approved:
+This chat is the orchestrator. Delegate the active step to the sub-agent named in that skill. Show the handoff and wait. Do not write the step artifact in this chat, and do not start the next sub-agent before the user approves.
 
-1. `requirements.md` — after the user answers clarifying questions
-2. `architecture.md`
-3. `design-review.md`, then update `architecture.md` for agreed changes
-4. `impl-plan.md` — dependency order, with blocked tasks named
-5. One approved task at a time under `src/` and `tests/`
-6. `code-review.md`
-7. `verification-report.md`
-8. Pull request only when the user asks
+Each sub-agent writes its markdown in its own folder under `.cursor/artifacts/`, in order, and only after the previous one is approved. Never write these files at the repository root:
+
+1. `.cursor/artifacts/requirements-agent/requirements.md` — after the user answers clarifying questions
+2. `.cursor/artifacts/architect/architecture.md`
+3. `.cursor/artifacts/design-reviewer/design-review.md`, then update `.cursor/artifacts/architect/architecture.md` for agreed changes
+4. `.cursor/artifacts/planner/impl-plan.md` — dependency order, with blocked tasks named
+5. One approved task at a time under `src/holdshelf` and `tests/`
+6. `.cursor/artifacts/code-reviewer/code-review.md`
+7. `.cursor/artifacts/verifier/verification-report.md`
+8. `CHANGELOG.md` at the repository root and `.cursor/artifacts/release-agent/pull-request.md` — only when the user asks
 
 Record unknown facts as `Not Found`. Do not skip a gate because a later prompt was pasted.
 
 ```markdown
 # Bad
-Implemented the CLI because the story mentioned a local tool.
+Rewrote the hold list endpoint because the story mentioned overdue holds.
 
 # Good
-Asked the six open questions in docs/user-story.md and waited for answers
-before drafting requirements.md.
+Loaded HOLD-21 from Jira, asked the five open questions in docs/user-story.md,
+and waited for answers before drafting the requirements.
 ```

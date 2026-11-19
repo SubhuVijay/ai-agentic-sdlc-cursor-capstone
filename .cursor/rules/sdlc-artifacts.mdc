@@ -1,11 +1,12 @@
 ---
-description: Shape of the SDLC markdown artifacts
-globs: requirements.md,architecture.md,design-review.md,impl-plan.md,code-review.md,verification-report.md
+description: Shape of the SDLC markdown each sub-agent writes under .cursor/artifacts
+globs: .cursor/artifacts/**/*.md
 alwaysApply: false
 ---
 
 # SDLC artifacts
 
+- Write the file under `.cursor/artifacts/<sub-agent>/`. Do not write it at the repository root.
 - Keep requirement, decision, and task IDs stable once the user has approved them.
 - State assumptions in their own section.
 - For design review, give each finding a severity: blocker, should-fix, or note.
@@ -18,8 +19,8 @@ alwaysApply: false
 - Build the app
 
 # Good
-## T2 — Write the snapshot
+## T2 — Add GET /api/holds/overdue
 Depends on: T1
 Blocked until: T1 is done
-Done when: a missing description is written as `Not Found`
+Done when: a ready hold with no phone returns `Not Found`
 ```

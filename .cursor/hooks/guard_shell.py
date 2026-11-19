@@ -36,6 +36,12 @@ def reads_dotenv(command: str) -> bool:
     return re.search(r"\.env\b", scrubbed, re.IGNORECASE) is not None
 
 
+def reads_jira_local_config(command: str) -> bool:
+    if READ_VERBS.search(command) is None:
+        return False
+    return re.search(r"jira\.local\.json\b", command, re.IGNORECASE) is not None
+
+
 def is_force_push(command: str) -> bool:
     match = GIT_PUSH.search(command)
     if match is None:
@@ -44,11 +50,14 @@ def is_force_push(command: str) -> bool:
 
 
 def decide(command: str) -> dict:
-    if reads_dotenv(command) or DUMP_ENV.search(command) is not None:
+    if reads_dotenv(command) or reads_jira_local_config(command) or DUMP_ENV.search(command) is not None:
         return {
             "permission": "deny",
             "user_message": "Blocked a command that would print secrets or environment values.",
-            "agent_message": "Do not read .env files or dump the environment. .env.example is safe to read.",
+            "agent_message": (
+                "Do not read .env files, config/jira.local.json, or dump the environment. "
+                ".env.example and config/jira.example.json are safe to read."
+            ),
         }
     if is_force_push(command) or GIT_RESET_HARD.search(command) or GIT_CLEAN_FORCE.search(command):
         return {

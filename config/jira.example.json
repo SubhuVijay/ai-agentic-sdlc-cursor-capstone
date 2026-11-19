@@ -1,0 +1,19 @@
+{
+  "source": "file",
+  "file": "docs/user-story.md",
+  "jira": {
+    "baseUrl": "https://your-domain.atlassian.net",
+    "email": "you@company.com",
+    "apiToken": "",
+    "issueKey": "HOLD-21"
+  },
+  "confluence": {
+    "baseUrl": "https://your-domain.atlassian.net/wiki",
+    "email": "you@company.com",
+    "apiToken": "",
+    "pageId": "123456"
+  },
+  "word": {
+    "path": "docs/incoming/user-story.docx"
+  }
+}

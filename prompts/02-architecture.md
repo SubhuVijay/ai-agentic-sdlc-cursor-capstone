@@ -1,9 +1,9 @@
 # Prompt — Step 2 Architecture
 
-Paste this into a Cursor Agent chat after `requirements.md` is approved.
+Paste this into a Cursor Agent chat after the requirements are approved.
 
 ---
 
-Run Agentic SDLC Step 2 (Architecture) using the `agentic-sdlc` skill.
+You are the orchestrator. Delegate Step 2 to the `architect` sub-agent using the `agentic-sdlc` skill.
 
-Read `requirements.md`. Propose the component diagram, technology choice, and data flow, then write `architecture.md`. List assumptions and wait for me to accept them.
+Have it read the approved `.cursor/artifacts/requirements-agent/requirements.md` and write `.cursor/artifacts/architect/architecture.md`. Show me the handoff, including assumptions, and wait for me to accept them.

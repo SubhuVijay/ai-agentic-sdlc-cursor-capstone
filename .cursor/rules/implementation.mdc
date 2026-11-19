@@ -1,17 +1,18 @@
 ---
-description: Implementation rules for the documentation sync tool
+description: Implementation rules for the hold shelf under src/ and tests/
 globs: src/**/*,tests/**/*
 alwaysApply: false
 ---
 
 # Implementation
 
-- Implement only the task the user approved in `impl-plan.md`.
-- Match behavior to `requirements.md` and the decisions in `design-review.md`.
+- Implement only the task the user approved in `.cursor/artifacts/planner/impl-plan.md`.
+- Match behavior to `.cursor/artifacts/requirements-agent/requirements.md` and the decisions in `.cursor/artifacts/design-reviewer/design-review.md`.
 - Name functions for the fact they collect or the failure they handle.
 - Share duplicated logic. Do not copy the same check into a second function.
 - Cover the happy path and the missing-field / `Not Found` case for the task you touch.
-- Surface API failures, missing files, and empty repos as a result the user can read.
+- Surface a bad window value, a missing hold, and an empty overdue list as a result the user can read.
+- Extend `src/holdshelf`. Keep `GET /api/holds` and pickup working.
 
 ```text
 # Bad
@@ -19,5 +20,5 @@ except Exception:
     pass
 
 # Good
-Return a result that names the failed call and still includes the local facts.
+Return a 400 that names the bad window value, and keep the existing hold list unchanged.
 ```

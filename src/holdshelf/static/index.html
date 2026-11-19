@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lane Street Library — Hold shelf</title>
+  <style>
+    :root { color-scheme: light; font-family: "Segoe UI", sans-serif; }
+    body { margin: 2rem auto; max-width: 52rem; padding: 0 1rem; color: #1c1917; }
+    h1 { font-size: 1.6rem; margin-bottom: 0.2rem; }
+    p.lead { margin-top: 0; color: #57534e; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 0.55rem 0.4rem; border-bottom: 1px solid #e7e5e4; }
+    th { font-size: 0.8rem; letter-spacing: 0.03em; text-transform: uppercase; color: #78716c; }
+    button { font: inherit; padding: 0.3rem 0.7rem; }
+    .error { background: #fef2f2; color: #991b1b; padding: 0.7rem 0.8rem; }
+    .empty { color: #57534e; }
+  </style>
+</head>
+<body>
+  <h1>Hold shelf</h1>
+  <p class="lead">Lane Street Library. Books waiting for patrons to collect.</p>
+  <div id="message" role="status"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Hold</th>
+        <th>Title</th>
+        <th>Patron</th>
+        <th>Ready since</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="holds"></tbody>
+  </table>
+
+  <script>
+    const message = document.getElementById("message");
+    const body = document.getElementById("holds");
+
+    function showError(text) {
+      message.className = "error";
+      message.textContent = text;
+    }
+
+    async function loadHolds() {
+      message.className = "";
+      message.textContent = "";
+      const health = await fetch("/api/health");
+      if (!health.ok) {
+        showError("API unreachable");
+        body.replaceChildren();
+        return;
+      }
+      const response = await fetch("/api/holds");
+      const payload = await response.json();
+      if (!response.ok) {
+        showError(payload.error || "Could not load holds.");
+        return;
+      }
+      render(payload.holds || []);
+    }
+
+    function render(holds) {
+      body.replaceChildren();
+      if (holds.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 6;
+        cell.className = "empty";
+        cell.textContent = "The hold shelf is empty.";
+        row.append(cell);
+        body.append(row);
+        return;
+      }
+      for (const hold of holds) {
+        const row = document.createElement("tr");
+        for (const value of [hold.id, hold.title, hold.patron, hold.readySince, hold.status]) {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.append(cell);
+        }
+        const action = document.createElement("td");
+        if (hold.status === "ready") {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Mark picked up";
+          button.addEventListener("click", () => pickup(hold.id, button));
+          action.append(button);
+        }
+        row.append(action);
+        body.append(row);
+      }
+    }
+
+    async function pickup(id, button) {
+      button.disabled = true;
+      const response = await fetch("/api/holds/" + encodeURIComponent(id) + "/pickup", { method: "POST" });
+      const payload = await response.json();
+      if (!response.ok) {
+        showError(payload.error || "Pickup failed.");
+        button.disabled = false;
+        return;
+      }
+      await loadHolds();
+    }
+
+    loadHolds().catch(() => showError("API unreachable"));
+  </script>
+</body>
+</html>

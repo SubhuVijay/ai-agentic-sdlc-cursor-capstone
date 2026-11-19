@@ -17,11 +17,24 @@ class GateReportTests(unittest.TestCase):
         self.assertIn("Step 1 — Requirements: missing", report)
         self.assertIn("Next gate: Step 1 — Requirements", report)
         self.assertIn("docs/user-story.md", report)
+        self.assertIn("Orchestrator:", report)
+        self.assertIn(".cursor/agents/", report)
+        self.assertIn("scripts/load_user_story.py", report)
+        self.assertIn(".cursor/artifacts/", report)
+
+    def test_root_level_artifact_does_not_pass_the_gate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "requirements.md").write_text("# Requirements\n", encoding="utf-8")
+            report = sdlc_context.gate_report(root)
+        self.assertIn("Step 1 — Requirements: missing", report)
 
     def test_next_gate_is_the_first_missing_artifact(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "requirements.md").write_text("# Requirements\n", encoding="utf-8")
+            requirements = root / ".cursor/artifacts/requirements-agent/requirements.md"
+            requirements.parent.mkdir(parents=True)
+            requirements.write_text("# Requirements\n", encoding="utf-8")
             report = sdlc_context.gate_report(root)
         self.assertIn("Step 1 — Requirements: present", report)
         self.assertIn("Next gate: Step 2 — Architecture", report)
@@ -30,12 +43,14 @@ class GateReportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in (
-                "requirements.md",
-                "architecture.md",
-                "design-review.md",
-                "impl-plan.md",
+                ".cursor/artifacts/requirements-agent/requirements.md",
+                ".cursor/artifacts/architect/architecture.md",
+                ".cursor/artifacts/design-reviewer/design-review.md",
+                ".cursor/artifacts/planner/impl-plan.md",
             ):
-                (root / name).write_text("# done\n", encoding="utf-8")
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("# done\n", encoding="utf-8")
             (root / "docs").mkdir()
             (root / "docs" / "user-story.md").write_text("# story\n", encoding="utf-8")
             report = sdlc_context.gate_report(root)

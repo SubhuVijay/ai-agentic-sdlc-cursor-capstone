@@ -6,10 +6,10 @@ import sys
 from pathlib import Path
 
 GATES = (
-    ("requirements.md", "Step 1 — Requirements"),
-    ("architecture.md", "Step 2 — Architecture"),
-    ("design-review.md", "Step 3 — Design review"),
-    ("impl-plan.md", "Step 4 — Implementation plan"),
+    (".cursor/artifacts/requirements-agent/requirements.md", "Step 1 — Requirements"),
+    (".cursor/artifacts/architect/architecture.md", "Step 2 — Architecture"),
+    (".cursor/artifacts/design-reviewer/design-review.md", "Step 3 — Design review"),
+    (".cursor/artifacts/planner/impl-plan.md", "Step 4 — Implementation plan"),
 )
 
 
@@ -25,7 +25,8 @@ def gate_report(root: Path) -> str:
     if next_step is None:
         lines.append(
             "Planning gates are present. Continue from the approved task in "
-            "impl-plan.md, then code review, verification, and the pull request."
+            ".cursor/artifacts/planner/impl-plan.md, then code review, "
+            "verification, and the pull request."
         )
     else:
         lines.append(
@@ -34,7 +35,16 @@ def gate_report(root: Path) -> str:
     story = root / "docs" / "user-story.md"
     story_state = "present" if story.is_file() else "missing"
     lines.append(f"Story input: {story_state} (docs/user-story.md).")
+    lines.append(
+        "Story loader: python scripts/load_user_story.py "
+        "(Jira, Confluence, Word, or file, set in config/jira.local.json)."
+    )
+    lines.append("Artifacts: .cursor/artifacts/<sub-agent>/, never the repository root.")
     lines.append("Procedure: .cursor/skills/agentic-sdlc/SKILL.md.")
+    lines.append(
+        "Orchestrator: the parent agent delegates one step, then waits for approval."
+    )
+    lines.append("Sub-agents: .cursor/agents/.")
     return "\n".join(lines)
 
 

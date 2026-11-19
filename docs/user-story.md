@@ -1,45 +1,50 @@
-# User Story: Automated Documentation Sync
+# User story: Show holds that have waited too long
 
-**Source:** Team exercise brief. Treat this file as the incoming JIRA / Confluence / Word story.
-**ID:** DOC-SYNC-1
+**Source:** Lane Street Library, circulation desk
+**ID:** HOLD-21
 **Status:** Ready for clarification. This is not the approved requirements.
 
-## Story
+## User story
 
-As a developer on a service team, I want a local tool that reads the current repository and writes an up-to-date documentation snapshot, so that onboarding notes stay aligned with the code.
+As a librarian at Lane Street Library, I want the hold shelf to show which ready holds have been waiting past the pickup window, so that I can call those patrons and free the shelf.
 
-## Context
+## What already exists
 
-README sections and API notes are updated by hand after code changes. Reviewers often find them stale. The tool runs on demand against a repository path the user supplies. It records what it could determine from that repository and marks anything it could not determine.
+The hold shelf application in `src/holdshelf` is already in use at the desk.
 
-## Behavior to clarify
+- `GET /api/health` returns `{ "status": "ok" }`.
+- `GET /api/holds` returns every hold: id, title, patron, readySince, status (`ready` or `picked-up`), and phone. Phone is JSON `null` when the patron record has no number.
+- `POST /api/holds/{id}/pickup` marks a ready hold as picked up. An unknown id returns 404. A second pickup returns 409.
+- The page at `/` lists the holds and can mark one as picked up. It does not show the phone, and it does not say how long a book has been waiting.
+- Run it with `PYTHONPATH=src` and `python -m holdshelf`, then open `http://127.0.0.1:8765`.
 
-The notes below are the request as written. They are incomplete on purpose. Step 1 turns them into `requirements.md` only after the user answers the open questions.
+This story adds to that application. It does not replace the list or the pickup action.
 
-- Accept a path to a local git repository.
-- If the path is missing, not a directory, or not a git repository, stop with a clear error. Do not invent a snapshot.
-- If the repository has no commits or no tracked files, finish successfully and record that the repository is empty.
-- Collect a small set of documentation facts from the repository, such as project name, description, primary language, how to run tests, and public entry points. The exact fact list is not agreed.
-- When a fact cannot be determined, record the value `Not Found`. Do not guess.
-- If an optional remote metadata source is configured and the call fails, record the failure and continue with local facts. Do not fail the whole run because that call failed.
-- Never write secrets, tokens, `.env` values, or credential-file contents into the snapshot or the logs.
-- Write one Markdown document the user can review. The destination path is not agreed.
-- Validate inputs (path and optional URL). Reject a path that escapes the directory the user named.
+## Requested change
 
-## Not decided
+- Add a way on the existing page to show only the holds that are still `ready` and have waited longer than the pickup window.
+- Show the number of days each of those holds has been waiting, counted from `readySince` to today.
+- Show the patron phone on that view. When the phone is missing, show `Not Found`.
+- Add `GET /api/holds/overdue` for that same set of holds. The page loads it when the librarian asks for the long-waiting holds.
+- Keep picked-up holds out of that result.
+- An empty result tells the librarian that no ready hold is past the window.
+- Reject a bad window value with 400 and a clear error. Do not guess a list.
 
-- Scheduling, watch mode, and CI plugins
-- Opening pull requests from the tool
-- Editing source code
-- Rendering HTML or hosting a documentation site
+## Example
+
+On 18 November 2026, with a 7-day window, `GET /api/holds/overdue` includes H-1042 (ready since 2 November, Maya Chen, 555-0142) and does not include H-1048 (ready since 16 November) or H-0991 (already picked up). H-1048 would appear only in a shorter window, and its phone is `Not Found`.
+
+## Out of scope
+
+- Sending email or SMS
+- Connecting to the city library circulation system
+- Changing how a hold is marked picked up
+- Fines, renewals, and checkout
 
 ## Open questions
 
-Ask these before writing `requirements.md`. Add any further question that would change scope, data, or failure behavior.
-
-1. Which facts are mandatory in the snapshot?
-2. Where should the Markdown file be written, and may it overwrite an existing file?
-3. Is a remote metadata URL in scope for the first release, and what does a successful payload contain?
-4. Should the tool be a command-line program, a library, or both?
-5. Which language and runtime should the implementation use?
-6. What repository size should the first release support, and is network access allowed during a run?
+1. Is the pickup window 7 days, and can the librarian change it on the page?
+2. Which timezone decides "today" when counting days?
+3. Should a ready hold with no `readySince` be listed, and what should the days field show?
+4. Is `Not Found` the phone value in the API response as well as on the page?
+5. Should `GET /api/holds` stay exactly as it is?

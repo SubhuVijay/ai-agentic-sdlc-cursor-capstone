@@ -1,8 +1,8 @@
 # Step 4 — Implementation plan
 
-Prerequisite: `design-review.md`, and `architecture.md` already includes the agreed review decisions.
+Prerequisite: `.cursor/artifacts/design-reviewer/design-review.md`, and `.cursor/artifacts/architect/architecture.md` already includes the agreed review decisions.
 
-Write `impl-plan.md` from the approved architecture.
+Create `.cursor/artifacts/planner/` if needed and write `.cursor/artifacts/planner/impl-plan.md` from the approved architecture. Do not write it at the repository root.
 
 - Order tasks by dependency (`T1`, `T2`, ...).
 - For each task record the outcome, the files it will touch, what it depends on, and the definition of done.

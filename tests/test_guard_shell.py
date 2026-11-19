@@ -27,6 +27,8 @@ class GuardShellTests(unittest.TestCase):
             "type .env",
             "printenv",
             "Get-ChildItem Env:",
+            "cat config/jira.local.json",
+            "Get-Content config\\jira.local.json",
         ):
             with self.subTest(command=command):
                 self.assertEqual(guard_shell.decide(command)["permission"], "deny")
@@ -34,6 +36,8 @@ class GuardShellTests(unittest.TestCase):
     def test_env_example_read_is_allowed(self):
         self.assertEqual(guard_shell.decide("cat .env.example")["permission"], "allow")
         self.assertEqual(guard_shell.decide("Get-Content .env.sample")["permission"], "allow")
+        self.assertEqual(guard_shell.decide("cat config/jira.example.json")["permission"], "allow")
+        self.assertEqual(guard_shell.decide("python scripts/load_user_story.py")["permission"], "allow")
 
     def test_destructive_git_asks_for_confirmation(self):
         for command in (

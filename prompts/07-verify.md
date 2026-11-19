@@ -4,6 +4,6 @@ Paste this into a Cursor Agent chat after code review blockers are resolved.
 
 ---
 
-Run Agentic SDLC Step 7 (Verify) using the `agentic-sdlc` skill.
+You are the orchestrator. Delegate Step 7 to the `verifier` sub-agent using the `agentic-sdlc` skill.
 
-Run the unit and integration tests. Check the generated documentation for required sections, `Not Found` values, and leaked secrets. Write `verification-report.md` with the command and the output. Fix in-scope failures and re-run before you report success.
+Have it run the full test suite, check the hold shelf against the requirements for the overdue rules, `Not Found` phones, and leaked secrets, and write `.cursor/artifacts/verifier/verification-report.md`. It fixes in-scope failures and re-runs before it reports success. Show me the handoff.

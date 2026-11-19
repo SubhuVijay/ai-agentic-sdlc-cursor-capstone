@@ -16,6 +16,7 @@ class GuardSecretsTests(unittest.TestCase):
             r"C:\repo\.env.example",
             "/repo/.env.sample",
             r"C:\repo\tests\test_guard_secrets.py",
+            "/repo/config/jira.example.json",
         ):
             with self.subTest(path=path):
                 self.assertEqual(guard_secrets.decide(path)["permission"], "allow")
@@ -28,6 +29,7 @@ class GuardSecretsTests(unittest.TestCase):
             r"C:\Users\me\.ssh\id_rsa",
             "/repo/certs/server.pem",
             r"C:\repo\config\app.key",
+            r"C:\repo\config\jira.local.json",
         ):
             with self.subTest(path=path):
                 self.assertEqual(guard_secrets.decide(path)["permission"], "deny")

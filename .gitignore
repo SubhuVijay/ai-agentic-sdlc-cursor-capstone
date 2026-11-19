@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 !.env.sample
+config/jira.local.json
 *.pem
 *.key
 *.p12

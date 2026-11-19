@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 ALLOWED_ENV_NAMES = {".env.example", ".env.sample"}
-KEY_NAMES = {"credentials.json", "id_rsa", "id_dsa", "id_ed25519", "id_ecdsa"}
+KEY_NAMES = {"credentials.json", "jira.local.json", "id_rsa", "id_dsa", "id_ed25519", "id_ecdsa"}
 KEY_SUFFIXES = (".pem", ".p12", ".pfx", ".key")
 
 ALLOW = {"permission": "allow"}
